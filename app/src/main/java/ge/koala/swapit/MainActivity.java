@@ -188,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
                 case 0:
                     return "კატეგორიები";
                 case 1:
-                    return "შემოთავაზებები";
+                    return "განცხადებები";
                 case 2:
                     return "ბანერი";
             }
