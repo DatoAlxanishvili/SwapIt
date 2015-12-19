@@ -1,10 +1,11 @@
 package ge.koala.swapit;
 
-import android.app.TabActivity;
 import android.content.Intent;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -16,14 +17,13 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.Toast;
 
-import android.widget.TextView;
-
+import ge.koala.swapit.fragments.AddItemFragment;
+import ge.koala.swapit.fragments.AdsDetailFragment;
 import ge.koala.swapit.fragments.AdsFragment;
 import ge.koala.swapit.fragments.CategoriesFragment;
 import ge.koala.swapit.fragments.MainFragment;
@@ -45,18 +45,125 @@ public class MainActivity extends AppCompatActivity {
      */
     private ViewPager mViewPager;
     private DrawerLayout mDrawerLayout;
+    private Toolbar toolbar;
     private ActionBarDrawerToggle mDrawerToggle;
     private TabLayout tabLayout;
+    private NavigationView navigationView;
     private Bundle bundle=new Bundle();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+
+
+        // Create the adapter that will return a fragment for each of the three
+        // primary sections of the activity.
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(),bundle);
+
+        // Set up the ViewPager with the sections adapter.
+        mViewPager = (ViewPager) findViewById(R.id.container);
+        mViewPager.setAdapter(mSectionsPagerAdapter);
+
+        tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(mViewPager);
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
+        });
+        drawDrawer();
+        receiveCategoryIntent();
+    }
+
+    private void receiveCategoryIntent(){
+        Intent intent = getIntent();
+        String message = intent.getStringExtra("message");
+        if(message!=null) {
+
+//            bundle.putString("message", message);
+//            //set Fragmentclass Arguments
+//            mSectionsPagerAdapter.notifyDataSetChanged();
+//            mViewPager.setCurrentItem(1);
+
+            FragmentManager fragmentManager =  this.getSupportFragmentManager();
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            AdsDetailFragment frag=new AdsDetailFragment();
+            transaction.replace(R.id.fragment_container, frag);
+            //transaction.addToBackStack(null);
+            transaction.commit();
+            tabLayout.setVisibility(View.INVISIBLE);
+        }
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        tabLayout.setVisibility(View.VISIBLE);
+    }
+
+    private void drawDrawer(){
+        //Initializing NavigationView
+        navigationView = (NavigationView) findViewById(R.id.navigation_view);
+
+        //Setting Navigation View Item Selected Listener to handle the item click of the navigation menu
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+
+            // This method will trigger on item Click of navigation menu
+            @Override
+            public boolean onNavigationItemSelected(MenuItem menuItem) {
+
+
+                //Checking if the item is in checked state or not, if not make it in checked state
+                if (menuItem.isChecked()) menuItem.setChecked(false);
+                else menuItem.setChecked(true);
+
+                //Closing drawer on item click
+                mDrawerLayout.closeDrawers();
+
+                //Check to see which item was being clicked and perform appropriate action
+                switch (menuItem.getItemId()) {
+
+
+                    //Replacing the main content with ContentFragment Which is our Inbox View;
+                    case R.id.login:
+                        Toast.makeText(getApplicationContext(), "Inbox Selected", Toast.LENGTH_SHORT).show();
+                        AddItemFragment fragment = new AddItemFragment();
+                        android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                        fragmentTransaction.replace(R.id.fragment_container, fragment);
+                        fragmentTransaction.addToBackStack(null);
+                        fragmentTransaction.commit();
+                        tabLayout.setVisibility(View.INVISIBLE);
+                        return true;
+
+
+
+                    case R.id.register:
+                        Toast.makeText(getApplicationContext(), "Stared Selected", Toast.LENGTH_SHORT).show();
+                        return true;
+
+                    default:
+                        Toast.makeText(getApplicationContext(), "Somethings Wrong", Toast.LENGTH_SHORT).show();
+                        return true;
+
+                }
+            }
+        });
+
         /**
          * create drawer button
          */
@@ -86,48 +193,7 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_drawer);
         mDrawerToggle.syncState();
         /**end */
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(),bundle);
-
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
-
-        tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(mViewPager);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-        receiveCategoryIntent();
     }
-
-    private void receiveCategoryIntent(){
-        Intent intent = getIntent();
-        String message = intent.getStringExtra("message");
-        if(message!=null) {
-
-            bundle.putString("message", message);
-            //set Fragmentclass Arguments
-            mSectionsPagerAdapter.notifyDataSetChanged();
-            mViewPager.setCurrentItem(1);
-            tabLayout.setVisibility(View.INVISIBLE);
-
-        }
-    }
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -180,8 +246,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            // Show 3 total pages.
-            return 3;
+            // Show 2 total pages.
+            return 2;
         }
 
         @Override
@@ -191,8 +257,7 @@ public class MainActivity extends AppCompatActivity {
                     return "კატეგორიები";
                 case 1:
                     return "განცხადებები";
-                case 2:
-                    return "ბანერი";
+
             }
             return null;
         }
