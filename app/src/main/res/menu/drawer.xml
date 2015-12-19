@@ -6,13 +6,13 @@
         <item
             android:id="@+id/login"
             android:checked="false"
-            android:icon="@drawable/ic_drawer"
+            android:icon="@drawable/login"
             android:title="@string/login" />
 
         <item
             android:id="@+id/register"
             android:checked="false"
-            android:icon="@drawable/ic_drawer"
+            android:icon="@drawable/register"
             android:title="@string/register" />
 
 

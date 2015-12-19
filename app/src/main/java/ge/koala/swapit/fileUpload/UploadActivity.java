@@ -15,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -48,7 +49,8 @@ public class UploadActivity extends AppCompatActivity {
     private String filePath = null;
     private TextView txtPercentage;
     private ImageView imgPreview;
-    private VideoView vidPreview;
+    private EditText titleInput;
+    private EditText descriptionInput;
     private Button btnUpload;
     long totalSize = 0;
 
@@ -60,8 +62,8 @@ public class UploadActivity extends AppCompatActivity {
         btnUpload = (Button) findViewById(R.id.btnUpload);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         imgPreview = (ImageView) findViewById(R.id.imgPreview);
-        vidPreview = (VideoView) findViewById(R.id.videoPreview);
-
+         titleInput=(EditText) findViewById(R.id.input_layout_title);
+         descriptionInput=(EditText) findViewById(R.id.input_layout_description);
 
 
 
@@ -100,23 +102,19 @@ public class UploadActivity extends AppCompatActivity {
         // Checking whether captured media is image or video
         if (isImage) {
             imgPreview.setVisibility(View.VISIBLE);
-            vidPreview.setVisibility(View.GONE);
             // bimatp factory
             BitmapFactory.Options options = new BitmapFactory.Options();
 
             // down sizing image as it throws OutOfMemory Exception for larger
             // images
-            options.inSampleSize = 8;
+            options.inSampleSize =1;
 
             final Bitmap bitmap = BitmapFactory.decodeFile(filePath, options);
 
             imgPreview.setImageBitmap(bitmap);
         } else {
             imgPreview.setVisibility(View.GONE);
-            vidPreview.setVisibility(View.VISIBLE);
-            vidPreview.setVideoPath(filePath);
-            // start playing
-            vidPreview.start();
+
         }
     }
 
@@ -171,9 +169,9 @@ public class UploadActivity extends AppCompatActivity {
                 entity.addPart("image", new FileBody(sourceFile));
 
                 // Extra parameters if you want to pass to server
-                entity.addPart("website",
-                        new StringBody("www.androidhive.info"));
-                entity.addPart("email", new StringBody("abc@gmail.com"));
+                entity.addPart("title",
+                        new StringBody(titleInput.getText().toString()));
+                entity.addPart("description", new StringBody(descriptionInput.getEditableText().toString()));
 
                 totalSize = entity.getContentLength();
                 httppost.setEntity(entity);
@@ -218,7 +216,7 @@ public class UploadActivity extends AppCompatActivity {
      * */
     private void showAlert(String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(message).setTitle("Response from Servers")
+        builder.setMessage("განცხადება აიტვირთა წარმატებით").setTitle("")
                 .setCancelable(false)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {

@@ -6,9 +6,7 @@
     <string name="drawer_close">close</string>
     <string name="login">შესვლა</string>
     <string name="register">რეგისტრაცია</string>
-    <string name="btnTakePicture">Capture Image</string>
-    <string name="btnRecordVideo">Record Video</string>
-    <string name="or">(or)</string>
-    <string name="btnUploadToServer">Upload to Server</string>
+    <string name="btnTakePicture">გადაიღე სურათი</string>
+    <string name="btnUploadToServer">დადასტურება</string>
 
 </resources>

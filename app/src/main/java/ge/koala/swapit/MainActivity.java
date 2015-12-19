@@ -1,10 +1,16 @@
 package ge.koala.swapit;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -17,16 +23,23 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
-import ge.koala.swapit.fragments.AddItemFragment;
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
+import ge.koala.swapit.fileUpload.Config;
+import ge.koala.swapit.fileUpload.UploadActivity;
 import ge.koala.swapit.fragments.AdsDetailFragment;
 import ge.koala.swapit.fragments.AdsFragment;
 import ge.koala.swapit.fragments.CategoriesFragment;
-import ge.koala.swapit.fragments.MainFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,23 +56,35 @@ public class MainActivity extends AppCompatActivity {
     /**
      * The {@link ViewPager} that will host the section contents.
      */
+    // LogCat tag
+    private static final String TAG = MainActivity.class.getSimpleName();
+    // Camera activity request codes
+    private static final int CAMERA_CAPTURE_IMAGE_REQUEST_CODE = 100;
+    private static final int CAMERA_CAPTURE_VIDEO_REQUEST_CODE = 200;
+
+    public static final int MEDIA_TYPE_IMAGE = 1;
+    private Uri fileUri; // file url to store image/video
+    private Context context;
+    private Button btnCapturePicture;
     private ViewPager mViewPager;
     private DrawerLayout mDrawerLayout;
     private Toolbar toolbar;
     private ActionBarDrawerToggle mDrawerToggle;
     private TabLayout tabLayout;
     private NavigationView navigationView;
+    private FloatingActionButton fab;
+    private AppBarLayout appBar;
     private Bundle bundle=new Bundle();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+         context=getApplicationContext();
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
-
+        appBar= (AppBarLayout) findViewById(R.id.appbar);
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -72,12 +97,11 @@ public class MainActivity extends AppCompatActivity {
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+       fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+             captureImage();
             }
         });
         drawDrawer();
@@ -86,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void receiveCategoryIntent(){
         Intent intent = getIntent();
-        String message = intent.getStringExtra("message");
+        String message = intent.getStringExtra("title");
         if(message!=null) {
 
 //            bundle.putString("message", message);
@@ -94,13 +118,16 @@ public class MainActivity extends AppCompatActivity {
 //            mSectionsPagerAdapter.notifyDataSetChanged();
 //            mViewPager.setCurrentItem(1);
 
+            Bundle args=intent.getBundleExtra("bundle");
             FragmentManager fragmentManager =  this.getSupportFragmentManager();
             FragmentTransaction transaction = fragmentManager.beginTransaction();
             AdsDetailFragment frag=new AdsDetailFragment();
+            frag.setArguments(args);
             transaction.replace(R.id.fragment_container, frag);
             //transaction.addToBackStack(null);
             transaction.commit();
-            tabLayout.setVisibility(View.INVISIBLE);
+            tabLayout.setVisibility(View.GONE);
+            fab.setVisibility(View.INVISIBLE);
         }
     }
     @Override
@@ -142,12 +169,12 @@ public class MainActivity extends AppCompatActivity {
                     //Replacing the main content with ContentFragment Which is our Inbox View;
                     case R.id.login:
                         Toast.makeText(getApplicationContext(), "Inbox Selected", Toast.LENGTH_SHORT).show();
-                        AddItemFragment fragment = new AddItemFragment();
-                        android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-                        fragmentTransaction.replace(R.id.fragment_container, fragment);
-                        fragmentTransaction.addToBackStack(null);
-                        fragmentTransaction.commit();
-                        tabLayout.setVisibility(View.INVISIBLE);
+//                        AddItemFragment fragment = new AddItemFragment();
+//                        android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+//                        fragmentTransaction.replace(R.id.fragment_container, fragment);
+//                        fragmentTransaction.addToBackStack(null);
+//                        fragmentTransaction.commit();
+//                        tabLayout.setVisibility(View.INVISIBLE);
                         return true;
 
 
@@ -236,10 +263,7 @@ public class MainActivity extends AppCompatActivity {
                     AdsFragment adsFragment=new AdsFragment();
                     adsFragment.setArguments(this.fragmentBundle);
                     return adsFragment;
-                case 2:
-                    MainFragment mainFragment=new MainFragment();
-                    mainFragment.setArguments(this.fragmentBundle);
-                    return mainFragment;
+
             }
             return null;
         }
@@ -261,5 +285,143 @@ public class MainActivity extends AppCompatActivity {
             }
             return null;
         }
+    }
+
+    /**
+     * Checking device has camera hardware or not
+     * */
+    private boolean isDeviceSupportCamera() {
+        if (context.getPackageManager().hasSystemFeature(
+                PackageManager.FEATURE_CAMERA)) {
+            // this device has a camera
+            return true;
+        } else {
+            // no camera on this device
+            return false;
+        }
+    }
+
+    /**
+     * Launching camera app to capture image
+     */
+    private void captureImage() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
+
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+
+        // start the image capture Intent
+        startActivityForResult(intent, CAMERA_CAPTURE_IMAGE_REQUEST_CODE);
+    }
+
+
+    /**
+     * Here we store the file url as it will be null after returning from camera
+     * app
+     */
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        // save file url in bundle as it will be null on screen orientation
+        // changes
+        outState.putParcelable("file_uri", fileUri);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (savedInstanceState != null) {
+            // get the file url
+            fileUri = savedInstanceState.getParcelable("file_uri");
+        }
+    }
+
+
+
+    /**
+     * Receiving activity result method will be called after closing the camera
+     * */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // if the result is capturing Image
+        if (requestCode == CAMERA_CAPTURE_IMAGE_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+
+                // successfully captured the image
+                // launching upload activity
+                launchUploadActivity(true);
+
+
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+
+                // user cancelled Image capture
+                Toast.makeText(context,
+                        "User cancelled image capture", Toast.LENGTH_SHORT)
+                        .show();
+
+            } else {
+                // failed to capture image
+                Toast.makeText(context,
+                        "Sorry! Failed to capture image", Toast.LENGTH_SHORT)
+                        .show();
+            }
+
+
+        }
+    }
+
+    private void launchUploadActivity(boolean isImage){
+        Intent i = new Intent(MainActivity.this, UploadActivity.class);
+        i.putExtra("filePath", fileUri.getPath());
+        i.putExtra("isImage", isImage);
+        startActivity(i);
+    }
+
+    /**
+     * ------------ Helper Methods ----------------------
+     * */
+
+    /**
+     * Creating file uri to store image/video
+     */
+    public Uri getOutputMediaFileUri(int type) {
+        return Uri.fromFile(getOutputMediaFile(type));
+    }
+
+    /**
+     * returning image / video
+     */
+    private static File getOutputMediaFile(int type) {
+
+        // External sdcard location
+        File mediaStorageDir = new File(
+                Environment
+                        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                Config.IMAGE_DIRECTORY_NAME);
+
+        // Create the storage directory if it does not exist
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                Log.d(TAG, "Oops! Failed create "
+                        + Config.IMAGE_DIRECTORY_NAME + " directory");
+                return null;
+            }
+        }
+
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss",
+                Locale.getDefault()).format(new Date());
+        File mediaFile;
+        if (type == MEDIA_TYPE_IMAGE) {
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator
+                    + "IMG_" + timeStamp + ".jpg");
+
+        } else {
+            return null;
+        }
+
+        return mediaFile;
     }
 }

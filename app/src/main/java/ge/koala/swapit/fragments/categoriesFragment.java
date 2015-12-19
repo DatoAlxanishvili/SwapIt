@@ -38,10 +38,10 @@ public class CategoriesFragment extends Fragment {
          categoryView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
              @Override
              public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                 Intent intent = new Intent(getActivity().getBaseContext(),
-                         MainActivity.class);
-                 intent.putExtra("message", list.get(i).getName());
-                 getActivity().startActivity(intent);
+//                 Intent intent = new Intent(getActivity().getBaseContext(),
+//                         MainActivity.class);
+//                 intent.putExtra("message", list.get(i).getName());
+//                 getActivity().startActivity(intent);
 
              }
          });

@@ -26,6 +26,7 @@ public class AdsListAdapter extends BaseAdapter {
         this.context = context;
         this.ads = ads;
     }
+
     @Override
     public int getCount() {
         return ads.size();
@@ -48,14 +49,16 @@ public class AdsListAdapter extends BaseAdapter {
         ViewHolder holder = null;
         if (convertView == null) {
             itemView = View.inflate(context, R.layout.ad_list_item, null);
-            ImageView photoView= (ImageView) itemView.findViewById(R.id.photo);
-            TextView titleView= (TextView) itemView.findViewById(R.id.ad_title);
-            TextView descriptionView= (TextView) itemView.findViewById(R.id.brief_description);
+            ImageView photoView = (ImageView) itemView.findViewById(R.id.photo);
+            TextView titleView = (TextView) itemView.findViewById(R.id.ad_title);
+            TextView stateView = (TextView) itemView.findViewById(R.id.state);
+            TextView locationView = (TextView) itemView.findViewById(R.id.location);
             holder = new ViewHolder();
 
             holder.photoView = photoView;
             holder.titleView = titleView;
-            holder.descriptionView=descriptionView;
+            holder.stateView = stateView;
+            holder.locationView = locationView;
             itemView.setTag(holder);
         } else {
             itemView = convertView;
@@ -67,7 +70,9 @@ public class AdsListAdapter extends BaseAdapter {
 
 
         holder.titleView.setText(adObject.getName());
-        Picasso.with(context).load(adObject.getImageUrl()).into(holder.photoView);
+        holder.stateView.setText("მდგომარეობა : "+adObject.getState());
+        holder.locationView.setText("მდებარეობა : "+adObject.getLocation());
+        Picasso.with(context).load("http://mediacitys.com/swap/images/" + adObject.getImageUrl()).into(holder.photoView);
 
 
         return itemView;
@@ -76,7 +81,8 @@ public class AdsListAdapter extends BaseAdapter {
     private class ViewHolder {
         ImageView photoView;
         TextView titleView;
-        TextView descriptionView;
+        TextView stateView;
+        TextView locationView;
     }
 
 }
