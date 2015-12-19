@@ -1,5 +1,7 @@
 package ge.koala.swapit;
 
+import android.app.TabActivity;
+import android.content.Intent;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -22,6 +24,10 @@ import android.view.ViewGroup;
 
 import android.widget.TextView;
 
+import ge.koala.swapit.fragments.AdsFragment;
+import ge.koala.swapit.fragments.CategoriesFragment;
+import ge.koala.swapit.fragments.MainFragment;
+
 public class MainActivity extends AppCompatActivity {
 
     /**
@@ -40,7 +46,8 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager mViewPager;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
-
+    private TabLayout tabLayout;
+    private Bundle bundle=new Bundle();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,13 +88,13 @@ public class MainActivity extends AppCompatActivity {
         /**end */
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(),bundle);
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -98,10 +105,22 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
-
+        receiveCategoryIntent();
     }
 
+    private void receiveCategoryIntent(){
+        Intent intent = getIntent();
+        String message = intent.getStringExtra("message");
+        if(message!=null) {
 
+            bundle.putString("message", message);
+            //set Fragmentclass Arguments
+            mSectionsPagerAdapter.notifyDataSetChanged();
+            mViewPager.setCurrentItem(1);
+            tabLayout.setVisibility(View.INVISIBLE);
+
+        }
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -124,40 +143,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
 
-        public PlaceholderFragment() {
-        }
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-            textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
-            return rootView;
-        }
-    }
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
@@ -165,15 +151,31 @@ public class MainActivity extends AppCompatActivity {
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-        public SectionsPagerAdapter(FragmentManager fm) {
+        private final Bundle fragmentBundle;
+
+        public SectionsPagerAdapter(FragmentManager fm,Bundle data) {
             super(fm);
+            fragmentBundle=data;
         }
 
         @Override
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
+            switch (position){
+                case 0:
+                    CategoriesFragment categoriesFragment=new CategoriesFragment();
+                    return categoriesFragment;
+                case 1:
+                    AdsFragment adsFragment=new AdsFragment();
+                    adsFragment.setArguments(this.fragmentBundle);
+                    return adsFragment;
+                case 2:
+                    MainFragment mainFragment=new MainFragment();
+                    mainFragment.setArguments(this.fragmentBundle);
+                    return mainFragment;
+            }
+            return null;
         }
 
         @Override

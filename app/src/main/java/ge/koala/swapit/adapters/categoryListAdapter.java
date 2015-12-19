@@ -1,46 +1,79 @@
 package ge.koala.swapit.adapters;
 
-import android.support.v7.widget.RecyclerView;
+import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.util.ArrayList;
 
 import ge.koala.swapit.R;
+import ge.koala.swapit.objects.CategoryObject;
 
 /**
- * Created by dalkh on 19-Dec-15.
+ * Created by Geolabedu on 19.12.15.
  */
-public class categoryListAdapter extends RecyclerView.Adapter<categoryListAdapter.ViewHolder> {
+public class CategoryListAdapter extends BaseAdapter {
 
+    private ArrayList<CategoryObject> categories;
+    private Context context;
 
+    public CategoryListAdapter(Context context, ArrayList<CategoryObject> categories) {
+        this.context = context;
+        this.categories = categories;
+    }
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return null;
+    public int getCount() {
+        return categories.size();
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public Object getItem(int i) {
+        return this.categories.get(i);
+    }
 
+
+    @Override
+    public long getItemId(int i) {
+        return i;
     }
 
     @Override
-    public int getItemCount() {
-        return 0;
-    }
+    public View getView(int i, View convertView, ViewGroup viewGroup) {
+        View itemView;
+        ViewHolder holder = null;
+        if (convertView == null) {
+            itemView = View.inflate(context, R.layout.categories_list_item, null);
+             ImageView categoryIconView= (ImageView) itemView.findViewById(R.id.category_icon);
+             TextView nameView= (TextView) itemView.findViewById(R.id.category_name);
+            holder = new ViewHolder();
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
-        RobotoTextView dateView, tempMaxView, tempMinView;
-        DejaVUSansTextView weekDayView;
-        ImageView iconView;
+            holder.categoryIconView = categoryIconView;
+            holder.nameView = nameView;
 
-        public ViewHolder(View itemView) {
-            super(itemView);
-            dateView = (RobotoTextView) itemView.findViewById(R.id.date);
-            weekDayView = (DejaVUSansTextView) itemView.findViewById(R.id.weekDay);
-            iconView = (ImageView) itemView.findViewById(R.id.icon);
-            tempMaxView = (RobotoTextView) itemView.findViewById(R.id.temp_max);
-            tempMinView = (RobotoTextView) itemView.findViewById(R.id.temp_min);
-
+            itemView.setTag(holder);
+        } else {
+            itemView = convertView;
+            holder = (ViewHolder) itemView.getTag();
         }
+
+
+        CategoryObject categoryObject = (CategoryObject) getItem(i);
+
+
+        holder.nameView.setText(categoryObject.getName());
+        holder.categoryIconView.setImageResource(categoryObject.getCategoryIcon());
+
+
+        return itemView;
     }
+
+    private class ViewHolder {
+        ImageView categoryIconView;
+        TextView nameView;
+
+    }
+
 }

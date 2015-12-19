@@ -3,10 +3,10 @@ package ge.koala.swapit.objects;
 /**
  * Created by dalkh on 19-Dec-15.
  */
-public class categoryObject {
+public class CategoryObject {
     private String name;
     private int categoryIcon;
-    public categoryObject(String name, int categoryIcon) {
+    public CategoryObject(String name, int categoryIcon) {
         this.name = name;
         this.categoryIcon = categoryIcon;
 

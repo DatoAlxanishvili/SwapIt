@@ -2,21 +2,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
-
     >
-    <android.support.v4.widget.SwipeRefreshLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/swiperefresh_ads"
+    <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        >
-        <android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/ads_list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-
-            android:choiceMode="singleChoice"
-            android:dividerHeight="1dp"
-            />
-    </android.support.v4.widget.SwipeRefreshLayout>
+        android:id="@+id/ad_list"/>
 </RelativeLayout>
